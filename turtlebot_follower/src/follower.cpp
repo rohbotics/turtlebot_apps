@@ -39,6 +39,7 @@
 #include "turtlebot_follower/FollowerConfig.h"
 
 #include <depth_image_proc/depth_traits.h>
+#include <numeric>
 
 
 namespace turtlebot_follower
@@ -162,6 +163,9 @@ private:
     float x = 0.0;
     float y = 0.0;
     float z = 1e6;
+    
+    std::vector<float> z_buf;    
+
     //Number of points observed
     unsigned int n = 0;
 
@@ -182,10 +186,13 @@ private:
          x += x_val;
          y += y_val;
          z = std::min(z, depth); //approximate depth as forward.
+         z_buf.push_back(depth);
          n++;
        }
      }
     }
+    std::nth_element(z_buf.begin(), z_buf.begin() + z_buf.size()/2, z_buf.end());
+    z = z_buf[z_buf.size()/2];
 
     //If there are points, find the centroid and calculate the command goal.
     //If there are no points, simply publish a stop goal.
